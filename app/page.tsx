@@ -99,7 +99,7 @@ export default function Home() {
       >
         <h1
           style={{
-            fontSize: 40,
+            fontSize: 42,
             marginBottom: 6,
             color: "#111",
             fontFamily: "var(--font-norway)",
