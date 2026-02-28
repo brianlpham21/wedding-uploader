@@ -97,6 +97,36 @@ export default function Home() {
           textAlign: "center",
         }}
       >
+        <div>
+          <div
+            style={{
+              fontSize: 15,
+              marginBottom: 1,
+              color: "#111",
+              textTransform: "uppercase",
+            }}
+          >
+            The wedding of
+          </div>
+          <h3
+            style={{
+              fontSize: 45,
+              color: "#111",
+              fontFamily: "var(--font-brother)",
+            }}
+          >
+            Mio & Brian
+          </h3>
+        </div>
+        <div
+          style={{
+            height: 1,
+            width: "100%",
+            backgroundColor: "#999",
+            margin: "10px 0 20px 0",
+            opacity: 0.25,
+          }}
+        />
         <h1
           style={{
             fontSize: 42,
@@ -182,7 +212,7 @@ export default function Home() {
           }}
           aria-disabled={!canUpload}
         >
-          {isUploading ? "Uploading…" : "Select Photos"}
+          {isUploading ? "Uploading…" : "Take or Select Photos"}
         </label>
 
         {/* Status */}

@@ -16,6 +16,12 @@ const norway = localFont({
   display: "swap",
 });
 
+const brother = localFont({
+  src: "./BrotherSignature.otf",
+  variable: "--font-brother",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Wedding Photos",
   description: "Upload and share wedding memories",
@@ -27,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${norway.variable}`}>
+    <html
+      lang="en"
+      className={`${montserrat.variable} ${norway.variable} ${brother.variable}`}
+    >
       <body className="antialiased">{children}</body>
     </html>
   );
