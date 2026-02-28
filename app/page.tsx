@@ -72,18 +72,21 @@ export default function Home() {
     }
   }
 
+  const hasCode = passphrase.trim().length > 0;
+  const canUpload = hasCode && !isUploading;
+
   return (
     <main
       style={{
         maxWidth: 520,
         margin: "60px auto",
         padding: 24,
-        fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
       <div
         style={{
-          background: "white",
+          background: "var(--color-peach-50)",
+          border: `1px solid var(--color-pink-75)`,
           borderRadius: 20,
           padding: 28,
           boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
@@ -92,13 +95,13 @@ export default function Home() {
       >
         <h1
           style={{
-            fontSize: 30,
+            fontSize: 40,
             marginBottom: 6,
-            fontWeight: 600,
             color: "#111",
+            fontFamily: "var(--font-norway)",
           }}
         >
-          Share Photos
+          Through Your Eyes
         </h1>
 
         <p
@@ -109,7 +112,8 @@ export default function Home() {
             fontSize: 15,
           }}
         >
-          Upload as many photos as you’d like. No login needed.
+          We’d love to see this day through your lens. Upload as many photos as
+          you’d like.
         </p>
 
         {/* Passphrase input */}
@@ -121,13 +125,14 @@ export default function Home() {
           style={{
             width: "100%",
             padding: "12px 14px",
-            marginBottom: 18,
+            marginBottom: 10,
             borderRadius: 12,
             border: "1px solid #ddd",
             fontSize: 14,
             outline: "none",
             color: "#333",
             opacity: isUploading ? 0.7 : 1,
+            background: isUploading ? "#f9f9f9" : "#fff",
           }}
         />
 
@@ -139,42 +144,57 @@ export default function Home() {
           multiple
           onChange={onChange}
           style={{ display: "none" }}
-          disabled={isUploading}
+          disabled={!canUpload}
         />
+
+        {!hasCode && (
+          <p
+            style={{
+              fontSize: 13,
+              color: "#333",
+              marginBottom: 10,
+            }}
+          >
+            Enter the event passcode to upload photos.
+          </p>
+        )}
 
         {/* Styled button */}
         <label
-          htmlFor={isUploading ? undefined : "file-upload"}
+          htmlFor={canUpload ? "file-upload" : undefined}
           style={{
             display: "inline-block",
             padding: "14px 22px",
             borderRadius: 14,
-            background: isUploading ? "#999" : "#111",
-            color: "white",
+            background: canUpload ? "var(--color-coral-75)" : "#ddd",
+            color: canUpload ? "#111" : "#888",
             fontWeight: 500,
-            cursor: isUploading ? "not-allowed" : "pointer",
+            cursor: canUpload ? "pointer" : "not-allowed",
             fontSize: 15,
             transition: "all 0.2s ease",
-            opacity: isUploading ? 0.8 : 1,
+            opacity: canUpload ? 1 : 0.7,
             userSelect: "none",
+            width: "100%",
           }}
-          aria-disabled={isUploading}
+          aria-disabled={!canUpload}
         >
           {isUploading ? "Uploading…" : "Select Photos"}
         </label>
 
         {/* Status */}
-        <div
-          style={{
-            marginTop: 18,
-            minHeight: 24,
-            fontSize: 14,
-            color: status.startsWith("❌") ? "#c0392b" : "#333",
-            wordBreak: "break-word",
-          }}
-        >
-          {status}
-        </div>
+        {status && (
+          <div
+            style={{
+              marginTop: 18,
+              minHeight: 24,
+              fontSize: 14,
+              color: status.startsWith("❌") ? "#c0392b" : "#333",
+              wordBreak: "break-word",
+            }}
+          >
+            {status}
+          </div>
+        )}
       </div>
     </main>
   );
