@@ -19,11 +19,20 @@ export async function POST(req: Request) {
     const { filename, contentType, passphrase } = body ?? {};
 
     // Optional passcode gate (if you set it)
-    if (
-      process.env.UPLOAD_PASSPHRASE &&
-      passphrase !== process.env.UPLOAD_PASSPHRASE
-    ) {
-      return NextResponse.json({ error: "Wrong passphrase" }, { status: 401 });
+    const expected = process.env.UPLOAD_PASSPHRASE;
+
+    if (expected) {
+      const normalizedInput = String(passphrase ?? "")
+        .trim()
+        .toLowerCase();
+      const normalizedExpected = expected.trim().toLowerCase();
+
+      if (normalizedInput !== normalizedExpected) {
+        return NextResponse.json(
+          { error: "Wrong passphrase" },
+          { status: 401 },
+        );
+      }
     }
 
     if (!filename || typeof filename !== "string") {

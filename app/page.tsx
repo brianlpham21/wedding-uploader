@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type PresignedPutResponse = {
   url: string;
@@ -10,11 +10,7 @@ type PresignedPutResponse = {
 export default function Home() {
   const [status, setStatus] = useState("");
   const [passphrase, setPassphrase] = useState("");
-
-  const maxFiles = useMemo(
-    () => Number(process.env.NEXT_PUBLIC_MAX_FILES ?? 15),
-    [],
-  );
+  const [isUploading, setIsUploading] = useState(false);
 
   async function uploadOne(file: File) {
     // Step 1: ask server for presigned PUT URL
@@ -29,7 +25,6 @@ export default function Home() {
     });
 
     if (!res.ok) throw new Error(await res.text());
-
     const data: PresignedPutResponse = await res.json();
 
     // Step 2: upload file directly with PUT
@@ -53,22 +48,27 @@ export default function Home() {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
-    const slice = files.slice(0, maxFiles);
-
-    if (files.length > maxFiles) {
-      setStatus(`Limiting to ${maxFiles} files per upload session…`);
+    // Prevent accidental double uploads (e.g., double-tap / re-trigger while uploading)
+    if (isUploading) {
+      setStatus("Upload already in progress—please wait…");
+      e.target.value = "";
+      return;
     }
 
+    setIsUploading(true);
+
     try {
-      for (let i = 0; i < slice.length; i++) {
-        setStatus(`Uploading ${i + 1}/${slice.length}: ${slice[i].name}`);
-        await uploadOne(slice[i]);
+      for (let i = 0; i < files.length; i++) {
+        setStatus(`Uploading ${i + 1}/${files.length}: ${files[i].name}`);
+        await uploadOne(files[i]);
       }
 
       setStatus("✅ Uploaded — thank you!");
       e.target.value = "";
     } catch (err: any) {
       setStatus(`❌ ${err?.message ?? "Upload failed"}`);
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -76,26 +76,106 @@ export default function Home() {
     <main
       style={{
         maxWidth: 520,
-        margin: "40px auto",
-        padding: 16,
-        fontFamily: "system-ui",
+        margin: "60px auto",
+        padding: 24,
+        fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Share photos1 📸</h1>
-      <p style={{ marginTop: 0, opacity: 0.8 }}>
-        Upload up to {maxFiles} photos. No login needed.
-      </p>
+      <div
+        style={{
+          background: "white",
+          borderRadius: 20,
+          padding: 28,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+          textAlign: "center",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: 30,
+            marginBottom: 6,
+            fontWeight: 600,
+            color: "#111",
+          }}
+        >
+          Share Photos
+        </h1>
 
-      <input
-        placeholder="Event passcode (if required)"
-        value={passphrase}
-        onChange={(e) => setPassphrase(e.target.value)}
-        style={{ width: "100%", padding: 10, margin: "12px 0" }}
-      />
+        <p
+          style={{
+            marginTop: 0,
+            marginBottom: 20,
+            color: "#666",
+            fontSize: 15,
+          }}
+        >
+          Upload as many photos as you’d like. No login needed.
+        </p>
 
-      <input type="file" accept="image/*" multiple onChange={onChange} />
+        {/* Passphrase input */}
+        <input
+          placeholder="Event passcode"
+          value={passphrase}
+          onChange={(e) => setPassphrase(e.target.value)}
+          disabled={isUploading}
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            marginBottom: 18,
+            borderRadius: 12,
+            border: "1px solid #ddd",
+            fontSize: 14,
+            outline: "none",
+            color: "#333",
+            opacity: isUploading ? 0.7 : 1,
+          }}
+        />
 
-      <div style={{ marginTop: 16, minHeight: 24 }}>{status}</div>
+        {/* Hidden file input */}
+        <input
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={onChange}
+          style={{ display: "none" }}
+          disabled={isUploading}
+        />
+
+        {/* Styled button */}
+        <label
+          htmlFor={isUploading ? undefined : "file-upload"}
+          style={{
+            display: "inline-block",
+            padding: "14px 22px",
+            borderRadius: 14,
+            background: isUploading ? "#999" : "#111",
+            color: "white",
+            fontWeight: 500,
+            cursor: isUploading ? "not-allowed" : "pointer",
+            fontSize: 15,
+            transition: "all 0.2s ease",
+            opacity: isUploading ? 0.8 : 1,
+            userSelect: "none",
+          }}
+          aria-disabled={isUploading}
+        >
+          {isUploading ? "Uploading…" : "Select Photos"}
+        </label>
+
+        {/* Status */}
+        <div
+          style={{
+            marginTop: 18,
+            minHeight: 24,
+            fontSize: 14,
+            color: status.startsWith("❌") ? "#c0392b" : "#333",
+            wordBreak: "break-word",
+          }}
+        >
+          {status}
+        </div>
+      </div>
     </main>
   );
 }
