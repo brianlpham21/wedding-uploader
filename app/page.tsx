@@ -63,7 +63,7 @@ export default function Home() {
         await uploadOne(files[i]);
       }
 
-      setStatus("✅ Uploaded — thank you!");
+      setStatus("✅ Uploaded — Thank You!");
       e.target.value = "";
     } catch (err: any) {
       setStatus(`❌ ${err?.message ?? "Upload failed"}`);
