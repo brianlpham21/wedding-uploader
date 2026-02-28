@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 type PresignedPutResponse = {
   url: string;
@@ -127,6 +128,7 @@ export default function Home() {
             opacity: 0.25,
           }}
         />
+
         <h1
           style={{
             fontSize: 42,
@@ -141,14 +143,28 @@ export default function Home() {
         <p
           style={{
             marginTop: 0,
-            marginBottom: 20,
+            marginBottom: 5,
             color: "#666",
             fontSize: 15,
           }}
         >
-          We’d love to see this day through your lens. Upload as many photos as
+          We’d love to see this day through your lens. Upload as many moments as
           you’d like.
         </p>
+
+        <div
+          style={{
+            width: "100%",
+            height: 50,
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "center", // horizontal center
+            alignItems: "center", // vertical center
+            marginBottom: 10,
+          }}
+        >
+          <Image src="/heart.png" alt="heart" width={25} height={25} />
+        </div>
 
         {/* Passphrase input */}
         {/* <input
