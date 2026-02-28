@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from "react";
 
-type PresignedPost = {
+type PresignedPutResponse = {
   url: string;
-  fields: Record<string, string>;
   key: string;
 };
 
@@ -16,9 +15,9 @@ export default function Home() {
     () => Number(process.env.NEXT_PUBLIC_MAX_FILES ?? 15),
     [],
   );
-  // (You can also hardcode 15 here and skip NEXT_PUBLIC env vars.)
 
   async function uploadOne(file: File) {
+    // Step 1: ask server for presigned PUT URL
     const res = await fetch("/api/upload-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -28,15 +27,25 @@ export default function Home() {
         passphrase,
       }),
     });
+
     if (!res.ok) throw new Error(await res.text());
-    const data: PresignedPost = await res.json();
 
-    const form = new FormData();
-    Object.entries(data.fields).forEach(([k, v]) => form.append(k, v));
-    form.append("file", file);
+    const data: PresignedPutResponse = await res.json();
 
-    const up = await fetch(data.url, { method: "POST", body: form });
-    if (!up.ok) throw new Error("Upload failed");
+    // Step 2: upload file directly with PUT
+    const upload = await fetch(data.url, {
+      method: "PUT",
+      body: file,
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+    });
+
+    if (!upload.ok) {
+      const text = await upload.text().catch(() => "");
+      throw new Error(`R2 upload failed (${upload.status}): ${text}`);
+    }
+
     return data.key;
   }
 
@@ -44,15 +53,18 @@ export default function Home() {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
-    const slice = files.slice(0, 15); // hard cap
-    if (files.length > 15)
-      setStatus("Limiting to 15 files per upload session…");
+    const slice = files.slice(0, maxFiles);
+
+    if (files.length > maxFiles) {
+      setStatus(`Limiting to ${maxFiles} files per upload session…`);
+    }
 
     try {
       for (let i = 0; i < slice.length; i++) {
         setStatus(`Uploading ${i + 1}/${slice.length}: ${slice[i].name}`);
         await uploadOne(slice[i]);
       }
+
       setStatus("✅ Uploaded — thank you!");
       e.target.value = "";
     } catch (err: any) {
@@ -69,12 +81,11 @@ export default function Home() {
         fontFamily: "system-ui",
       }}
     >
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Share photos 📸</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Share photos1 📸</h1>
       <p style={{ marginTop: 0, opacity: 0.8 }}>
-        Upload up to 15 photos. No login needed.
+        Upload up to {maxFiles} photos. No login needed.
       </p>
 
-      {/** Optional passcode to reduce random link abuse */}
       <input
         placeholder="Event passcode (if required)"
         value={passphrase}
