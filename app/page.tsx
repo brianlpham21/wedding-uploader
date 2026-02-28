@@ -63,10 +63,14 @@ export default function Home() {
         await uploadOne(files[i]);
       }
 
-      setStatus("✅ Uploaded — Thank You!");
+      setStatus("✅ Captured and developing! Thank you!");
       e.target.value = "";
     } catch (err: any) {
-      setStatus(`❌ ${err?.message ?? "Upload failed"}`);
+      if (err && err.message.includes("Wrong passphrase")) {
+        setStatus("❌ Wrong passcode. Please check and try again.");
+      } else {
+        setStatus(`❌ ${err?.message ?? "Upload failed"}`);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -190,6 +194,7 @@ export default function Home() {
               fontSize: 14,
               color: status.startsWith("❌") ? "#c0392b" : "#333",
               wordBreak: "break-word",
+              fontWeight: 500,
             }}
           >
             {status}
