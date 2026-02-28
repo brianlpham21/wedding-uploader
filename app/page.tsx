@@ -76,8 +76,8 @@ export default function Home() {
     }
   }
 
-  const hasCode = passphrase.trim().length > 0;
-  const canUpload = hasCode && !isUploading;
+  // const hasCode = passphrase.trim().length > 0;
+  const canUpload = !isUploading;
 
   return (
     <main
@@ -121,7 +121,7 @@ export default function Home() {
         </p>
 
         {/* Passphrase input */}
-        <input
+        {/* <input
           placeholder="Event passcode"
           value={passphrase}
           onChange={(e) => setPassphrase(e.target.value)}
@@ -138,7 +138,7 @@ export default function Home() {
             opacity: isUploading ? 0.7 : 1,
             background: isUploading ? "#f9f9f9" : "#fff",
           }}
-        />
+        /> */}
 
         {/* Hidden file input */}
         <input
@@ -151,7 +151,7 @@ export default function Home() {
           disabled={!canUpload}
         />
 
-        {!hasCode && (
+        {/* {!hasCode && (
           <p
             style={{
               fontSize: 13,
@@ -161,7 +161,7 @@ export default function Home() {
           >
             Enter the event passcode to upload photos.
           </p>
-        )}
+        )} */}
 
         {/* Styled button */}
         <label

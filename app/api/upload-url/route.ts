@@ -16,24 +16,25 @@ const s3 = new S3Client({
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { filename, contentType, passphrase } = body ?? {};
+    // const { filename, contentType, passphrase } = body ?? {};
+    const { filename, contentType } = body ?? {};
 
-    // Optional passcode gate (if you set it)
-    const expected = process.env.UPLOAD_PASSPHRASE;
+    // // Optional passcode gate (if you set it)
+    // const expected = process.env.UPLOAD_PASSPHRASE;
 
-    if (expected) {
-      const normalizedInput = String(passphrase ?? "")
-        .trim()
-        .toLowerCase();
-      const normalizedExpected = expected.trim().toLowerCase();
+    // if (expected) {
+    //   const normalizedInput = String(passphrase ?? "")
+    //     .trim()
+    //     .toLowerCase();
+    //   const normalizedExpected = expected.trim().toLowerCase();
 
-      if (normalizedInput !== normalizedExpected) {
-        return NextResponse.json(
-          { error: "Wrong passphrase" },
-          { status: 401 },
-        );
-      }
-    }
+    //   if (normalizedInput !== normalizedExpected) {
+    //     return NextResponse.json(
+    //       { error: "Wrong passphrase" },
+    //       { status: 401 },
+    //     );
+    //   }
+    // }
 
     if (!filename || typeof filename !== "string") {
       return NextResponse.json({ error: "Missing filename" }, { status: 400 });
