@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 type PresignedPutResponse = {
@@ -8,10 +8,27 @@ type PresignedPutResponse = {
   key: string;
 };
 
+type PreviewItem = {
+  id: string;
+  file: File;
+  url: string; // object URL for preview
+};
+
 export default function Home() {
   const [status, setStatus] = useState("");
   const [passphrase, setPassphrase] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
+  // ✅ Preview state
+  const [selected, setSelected] = useState<PreviewItem[]>([]);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      selected.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function uploadOne(file: File) {
     // Step 1: ask server for presigned PUT URL
@@ -45,7 +62,8 @@ export default function Home() {
     return data.key;
   }
 
-  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+  // ✅ Instead of uploading immediately, we store previews first
+  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
@@ -56,18 +74,47 @@ export default function Home() {
       return;
     }
 
+    const items: PreviewItem[] = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    // Replace selection (feel free to change to append if you want)
+    // If replacing, revoke previous URLs to avoid leaks
+    selected.forEach((p) => URL.revokeObjectURL(p.url));
+
+    setSelected(items);
+    setStatus("");
+    e.target.value = "";
+  }
+
+  // ✅ Confirm upload
+  async function onUploadConfirm() {
+    if (!selected.length) return;
+
+    if (isUploading) {
+      setStatus("Upload already in progress—please wait…");
+      return;
+    }
+
     setIsUploading(true);
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        setStatus(`Uploading ${i + 1}/${files.length}: ${files[i].name}`);
-        await uploadOne(files[i]);
+      for (let i = 0; i < selected.length; i++) {
+        setStatus(
+          `Uploading ${i + 1}/${selected.length}: ${selected[i].file.name}`,
+        );
+        await uploadOne(selected[i].file);
       }
 
       setStatus("✅ Captured and developing! Thank you!");
-      e.target.value = "";
+
+      // Clear selection after successful upload
+      selected.forEach((p) => URL.revokeObjectURL(p.url));
+      setSelected([]);
     } catch (err: any) {
-      if (err && err.message.includes("Wrong passphrase")) {
+      if (err && err.message?.includes("Wrong passphrase")) {
         setStatus("❌ Wrong passcode. Please check and try again.");
       } else {
         setStatus(`❌ ${err?.message ?? "Upload failed"}`);
@@ -75,6 +122,20 @@ export default function Home() {
     } finally {
       setIsUploading(false);
     }
+  }
+
+  function clearSelection() {
+    selected.forEach((p) => URL.revokeObjectURL(p.url));
+    setSelected([]);
+    setStatus("");
+  }
+
+  function removeOne(id: string) {
+    setSelected((prev) => {
+      const item = prev.find((p) => p.id === id);
+      if (item) URL.revokeObjectURL(item.url);
+      return prev.filter((p) => p.id !== id);
+    });
   }
 
   // const hasCode = passphrase.trim().length > 0;
@@ -210,26 +271,150 @@ export default function Home() {
         )} */}
 
         {/* Styled button */}
-        <label
-          htmlFor={canUpload ? "file-upload" : undefined}
-          style={{
-            display: "inline-block",
-            padding: "14px 22px",
-            borderRadius: 14,
-            background: canUpload ? "var(--color-coral-75)" : "#ddd",
-            color: canUpload ? "#111" : "#888",
-            fontWeight: 500,
-            cursor: canUpload ? "pointer" : "not-allowed",
-            fontSize: 15,
-            transition: "all 0.2s ease",
-            opacity: canUpload ? 1 : 0.7,
-            userSelect: "none",
-            width: "100%",
-          }}
-          aria-disabled={!canUpload}
-        >
-          {isUploading ? "Uploading…" : "Take or Select Photos"}
-        </label>
+        {selected.length === 0 && (
+          <label
+            htmlFor={canUpload ? "file-upload" : undefined}
+            style={{
+              display: "inline-block",
+              padding: "14px 22px",
+              borderRadius: 14,
+              background: canUpload ? "var(--color-coral-75)" : "#ddd",
+              color: canUpload ? "#111" : "#888",
+              fontWeight: 500,
+              cursor: canUpload ? "pointer" : "not-allowed",
+              fontSize: 15,
+              transition: "all 0.2s ease",
+              opacity: canUpload ? 1 : 0.7,
+              userSelect: "none",
+              width: "100%",
+            }}
+            aria-disabled={!canUpload}
+          >
+            Take or Select Photos
+          </label>
+        )}
+
+        {/* ✅ Preview + Confirm UI */}
+        {selected.length > 0 && (
+          <div style={{ textAlign: "left" }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: "#555",
+                marginBottom: 10,
+              }}
+            >
+              Preview ({selected.length})
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 8,
+              }}
+            >
+              {selected.map((p) => (
+                <div
+                  key={p.id}
+                  style={{
+                    position: "relative",
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    background: "#fff",
+                    aspectRatio: "1 / 1",
+                  }}
+                >
+                  {/* Use <img> for object URLs */}
+                  <img
+                    src={p.url}
+                    alt={p.file.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => removeOne(p.id)}
+                    disabled={isUploading}
+                    style={{
+                      position: "absolute",
+                      top: 6,
+                      right: 6,
+                      borderRadius: 999,
+                      border: "none",
+                      width: 40, // ⬅ bigger tap area
+                      height: 40, // ⬅ bigger tap area
+                      cursor: isUploading ? "not-allowed" : "pointer",
+                      background: "rgba(0,0,0,0.65)",
+                      color: "#fff",
+                      fontSize: 20, // ⬅ bigger X
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backdropFilter: "blur(4px)", // subtle polish
+                    }}
+                    aria-label="Remove photo"
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button
+                type="button"
+                onClick={clearSelection}
+                disabled={isUploading}
+                style={{
+                  flex: 1,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(0,0,0,0.15)",
+                  background: "#999",
+                  cursor: isUploading ? "not-allowed" : "pointer",
+                  fontWeight: 500,
+                  color: "#fff",
+                }}
+              >
+                Clear
+              </button>
+
+              <button
+                type="button"
+                onClick={onUploadConfirm}
+                disabled={isUploading || selected.length === 0}
+                style={{
+                  flex: 2,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "none",
+                  background:
+                    isUploading || selected.length === 0
+                      ? "#bbb"
+                      : "var(--color-coral-75)",
+                  color: isUploading || selected.length === 0 ? "#666" : "#111",
+                  cursor:
+                    isUploading || selected.length === 0
+                      ? "not-allowed"
+                      : "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                {isUploading ? "Uploading…" : "Upload Photos"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Status */}
         {status && (
