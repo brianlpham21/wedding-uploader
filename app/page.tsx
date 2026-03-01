@@ -110,7 +110,7 @@ export default function Home() {
 
       setStatus("✅ Captured and developing! Thank you!");
 
-      // Clear selection after successful upload
+      // Clear previews after success
       selected.forEach((p) => URL.revokeObjectURL(p.url));
       setSelected([]);
     } catch (err: any) {
@@ -142,6 +142,23 @@ export default function Home() {
   const canUpload = !isUploading;
 
   const thumb = "clamp(180px, 28vw, 120px)";
+
+  function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+
+    const items: PreviewItem[] = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    // ✅ Append so they can take 1 photo now, then add more from gallery later
+    setSelected((prev) => [...prev, ...items]);
+
+    setStatus("");
+    e.target.value = ""; // important so selecting the same photo again triggers change
+  }
 
   return (
     <main
@@ -255,7 +272,7 @@ export default function Home() {
           type="file"
           accept="image/*"
           multiple
-          onChange={onChange}
+          onChange={onPickFiles} // NOT the uploading onChange
           style={{ display: "none" }}
           disabled={!canUpload}
         />
