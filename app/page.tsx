@@ -310,9 +310,11 @@ export default function Home() {
 
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 8,
+                display: "flex",
+                gap: 12,
+                overflowX: "auto",
+                paddingBottom: 6,
+                scrollSnapType: "x mandatory",
               }}
             >
               {selected.map((p) => (
@@ -320,14 +322,16 @@ export default function Home() {
                   key={p.id}
                   style={{
                     position: "relative",
-                    borderRadius: 12,
+                    minWidth: 140, // controls thumbnail size
+                    height: 140,
+                    borderRadius: 16,
                     overflow: "hidden",
                     border: "1px solid rgba(0,0,0,0.08)",
                     background: "#fff",
-                    aspectRatio: "1 / 1",
+                    flexShrink: 0,
+                    scrollSnapAlign: "start",
                   }}
                 >
-                  {/* Use <img> for object URLs */}
                   <img
                     src={p.url}
                     alt={p.file.name}
@@ -345,24 +349,22 @@ export default function Home() {
                     disabled={isUploading}
                     style={{
                       position: "absolute",
-                      top: 6,
-                      right: 6,
+                      top: 8,
+                      right: 8,
                       borderRadius: 999,
                       border: "none",
-                      width: 40, // ⬅ bigger tap area
-                      height: 40, // ⬅ bigger tap area
+                      width: 40,
+                      height: 40,
                       cursor: isUploading ? "not-allowed" : "pointer",
                       background: "rgba(0,0,0,0.65)",
                       color: "#fff",
-                      fontSize: 20, // ⬅ bigger X
+                      fontSize: 20,
                       fontWeight: 600,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      backdropFilter: "blur(4px)", // subtle polish
+                      backdropFilter: "blur(4px)",
                     }}
-                    aria-label="Remove photo"
-                    title="Remove"
                   >
                     ×
                   </button>
