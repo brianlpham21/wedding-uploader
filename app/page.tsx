@@ -324,7 +324,7 @@ export default function Home() {
                   key={p.id}
                   style={{
                     position: "relative",
-                    minWidth: thumb, // controls thumbnail size
+                    width: thumb, // controls thumbnail size
                     height: thumb,
                     borderRadius: 16,
                     overflow: "hidden",
