@@ -141,6 +141,8 @@ export default function Home() {
   // const hasCode = passphrase.trim().length > 0;
   const canUpload = !isUploading;
 
+  const thumb = "clamp(84px, 28vw, 120px)";
+
   return (
     <main
       style={{
@@ -322,8 +324,8 @@ export default function Home() {
                   key={p.id}
                   style={{
                     position: "relative",
-                    minWidth: 140, // controls thumbnail size
-                    height: 140,
+                    minWidth: thumb, // controls thumbnail size
+                    height: thumb,
                     borderRadius: 16,
                     overflow: "hidden",
                     border: "1px solid rgba(0,0,0,0.08)",
