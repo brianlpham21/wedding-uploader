@@ -141,7 +141,7 @@ export default function Home() {
   // const hasCode = passphrase.trim().length > 0;
   const canUpload = !isUploading;
 
-  const thumb = "clamp(84px, 28vw, 120px)";
+  const thumb = "clamp(180px, 28vw, 120px)";
 
   return (
     <main
@@ -307,7 +307,7 @@ export default function Home() {
                 marginBottom: 10,
               }}
             >
-              Preview ({selected.length})
+              Preview ({selected.length}) (Swipe to review →)
             </div>
 
             <div
