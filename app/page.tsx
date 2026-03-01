@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 type PresignedPutResponse = {
   url: string;
@@ -439,18 +440,43 @@ export default function Home() {
 
         {/* Status */}
         {status && (
-          <div
-            style={{
-              marginTop: 18,
-              minHeight: 24,
-              fontSize: 14,
-              color: status.startsWith("❌") ? "#c0392b" : "#333",
-              wordBreak: "break-word",
-              fontWeight: 500,
-            }}
-          >
-            {status}
-          </div>
+          <>
+            <div
+              style={{
+                marginTop: 18,
+                minHeight: 24,
+                fontSize: 14,
+                color: status.startsWith("❌") ? "#c0392b" : "#333",
+                wordBreak: "break-word",
+                fontWeight: 500,
+              }}
+            >
+              {status}
+              {"✅ Captured and developing! Thank you!"}
+            </div>
+            {status === "✅ Captured and developing! Thank you!" && (
+              <div
+                style={{
+                  marginTop: 18,
+                  minHeight: 24,
+                  fontSize: 14,
+                  color: "#333",
+                  wordBreak: "break-word",
+                  fontWeight: 500,
+                }}
+              >
+                Be sure to visit{" "}
+                <Link
+                  href="https://mioandbrian.love"
+                  style={{ color: "var(--color-coral)", fontWeight: 500 }}
+                >
+                  https://mioandbrian.love
+                </Link>{" "}
+                after the wedding to see the full gallery and relive all the
+                memories!
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>
