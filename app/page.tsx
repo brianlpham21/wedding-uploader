@@ -452,7 +452,6 @@ export default function Home() {
               }}
             >
               {status}
-              {"✅ Captured and developing! Thank you!"}
             </div>
             {status === "✅ Captured and developing! Thank you!" && (
               <div
